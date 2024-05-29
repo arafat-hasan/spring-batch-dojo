@@ -1,0 +1,29 @@
+services:
+  db:
+    container_name: postgrest-db
+    image: postgres:13-alpine
+    ports:
+      - 5432:${POSTGRES_EXTERNAL_PORT}
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    networks:
+      - net
+    restart: always
+
+  app:
+    container_name: spring-batch-dojo
+    build:
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/spring-batch-dojo
+    depends_on:
+      - db
+    networks:
+      - net
+
+
+networks:
+  net:
+    driver: bridge
