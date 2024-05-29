@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>batch-processing-complete</artifactId>
+	<artifactId>spring-batch-dojo</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>batch-processing-complete</name>
-	<description>Demo project for Spring Boot</description>
+	<name>spring-batch-dojo</name>
+	<description>Spring Batch Playground</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
