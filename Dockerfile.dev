@@ -1,8 +1,27 @@
-FROM openjdk:17-jdk-slim
+FROM openjdk:21-jdk-slim
+
+ARG USER
+
+ENV TZ Asia/Dhaka
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
 RUN apt-get update
-RUN apt-get install git -y
+RUN apt-get update --fix-missing
+RUN apt-get install -y software-properties-common apt-utils sudo locales
+RUN apt-get update --fix-missing
+RUN apt-get install -y curl ssh net-tools iputils-ping vim git fish
 
-WORKDIR /spring-batch-dojo
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-ENTRYPOINT [ "sleep", "infinity"]
+RUN useradd -rm -d /home/$USER -s /bin/fish -g root -G sudo $USER
+RUN echo "$USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+COPY --chown=$USER:root . /home/$USER/app
+
+USER $USER
+WORKDIR /home/$USER/app
+
+ENTRYPOINT ["sleep", "infinity"]
