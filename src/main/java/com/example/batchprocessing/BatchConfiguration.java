@@ -24,7 +24,7 @@ public class BatchConfiguration {
     FlatFileItemReader<User> reader() {
 		return new FlatFileItemReaderBuilder<User>()
 			.name("userItemReader")
-			.resource(new ClassPathResource("sample-data.csv"))
+			.resource(new ClassPathResource("sample-data-2.csv"))
 			.delimited()
 			.names("firstName", "lastName")
 			.targetType(User.class)

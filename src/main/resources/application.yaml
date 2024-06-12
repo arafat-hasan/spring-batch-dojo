@@ -17,5 +17,5 @@ spring:
       initialize-schema: always
     #   table-prefix: spring_batch.BATCH_
     #   schema: classpath:db/create_spring_batch_tables.sql
-    # job:
-    #   enabled: false
+    job:
+      enabled: false
