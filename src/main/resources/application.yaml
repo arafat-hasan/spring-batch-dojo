@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: ${DB_DSN:jdbc:postgresql://localhost:5432/ah-jsb-auth}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:B4z1n9a!}
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 10
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    generate-ddl: true
+  batch:
+    jdbc:
+      initialize-schema: always
+    #   table-prefix: spring_batch.BATCH_
+    #   schema: classpath:db/create_spring_batch_tables.sql
+    # job:
+    #   enabled: false
