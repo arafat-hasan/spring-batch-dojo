@@ -9,9 +9,10 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     open-in-view: false
     generate-ddl: true
+    show-sql: true
   batch:
     jdbc:
       initialize-schema: always
@@ -19,3 +20,5 @@ spring:
     #   schema: classpath:db/create_spring_batch_tables.sql
     job:
       enabled: false
+server:
+  port: ${PORT}

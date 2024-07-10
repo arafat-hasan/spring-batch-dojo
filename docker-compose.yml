@@ -32,7 +32,7 @@ services:
     volumes:
       - $HOME/Share:/home/$USER/Share
     ports:
-      - 8000:8000
+      - ${PORT}:${PORT}
     depends_on:
       - db
     restart: no
