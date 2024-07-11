@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Slf4j
 @Configuration
@@ -34,13 +35,11 @@ public class SpringBatchConfig {
     private PlatformTransactionManager transactionManager;
     private CustomerRepository customerRepository;
 
-    
-
     @Bean(name = "CustomJobLauncher")
-    public JobLauncher jobLauncher(JobRepository jobRepository) throws Exception {
+    public JobLauncher jobLauncher() throws Exception {
         TaskExecutorJobLauncher jobLauncher = new TaskExecutorJobLauncher();
         jobLauncher.setJobRepository(jobRepository);
-        jobLauncher.setTaskExecutor(new SimpleAsyncTaskExecutor());
+        jobLauncher.setTaskExecutor(threadPoolTaskExecutor());
         jobLauncher.afterPropertiesSet();
         log.info("JobLauncher configured");
         return jobLauncher;
@@ -86,31 +85,39 @@ public class SpringBatchConfig {
         return writer;
     }
 
-
     @Bean
     public Step step1() {
         return new StepBuilder("csv-step", jobRepository)
-            .<Customer, Customer>chunk(10, transactionManager)
-            .reader(reader())
-            .processor(processor())
-            .writer(writer())
-            .taskExecutor(taskExecutor())
-            .build();
-        }
+                .<Customer, Customer>chunk(10, transactionManager)
+                .reader(reader())
+                .processor(processor())
+                .writer(writer())
+                .taskExecutor(threadPoolTaskExecutor())
+                .build();
+    }
 
     @Bean
     public Job runJob() {
         return new JobBuilder("importCustomers", jobRepository)
-            .start(step1())
-            .build();
+                .start(step1())
+                .build();
     }
 
     @Bean
-    public TaskExecutor taskExecutor() {
+    public TaskExecutor simpleAsyncTaskExecutor() {
         SimpleAsyncTaskExecutor asyncTaskExecutor = new SimpleAsyncTaskExecutor();
         asyncTaskExecutor.setConcurrencyLimit(100);
-        log.info("TaskExecutor configured");
+        log.info("SimpleAsyncTaskExecutor configured");
         return asyncTaskExecutor;
     }
 
+    @Bean
+    public TaskExecutor threadPoolTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setMaxPoolSize(12);
+        executor.setCorePoolSize(8);
+        executor.setQueueCapacity(15);
+        log.info("ThreadPoolTaskExecutor configured");
+        return executor;
+    }
 }
