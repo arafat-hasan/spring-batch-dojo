@@ -1,4 +1,4 @@
-package com.example.batchprocessing.config;
+package com.example.batchprocessing.batch;
 
 import com.example.batchprocessing.entity.Customer;
 import org.springframework.batch.item.ItemProcessor;

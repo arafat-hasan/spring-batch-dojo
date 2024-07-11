@@ -1,11 +1,15 @@
-package com.example.batchprocessing.config;
+package com.example.batchprocessing.batch;
 
 import com.example.batchprocessing.entity.Customer;
 import com.example.batchprocessing.repository.CustomerRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.data.RepositoryItemWriter;
 import org.springframework.batch.core.repository.JobRepository;
@@ -21,6 +25,7 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 
+@Slf4j
 @Configuration
 @AllArgsConstructor
 public class SpringBatchConfig {
@@ -29,6 +34,17 @@ public class SpringBatchConfig {
     private PlatformTransactionManager transactionManager;
     private CustomerRepository customerRepository;
 
+    
+
+    @Bean(name = "CustomJobLauncher")
+    public JobLauncher jobLauncher(JobRepository jobRepository) throws Exception {
+        TaskExecutorJobLauncher jobLauncher = new TaskExecutorJobLauncher();
+        jobLauncher.setJobRepository(jobRepository);
+        jobLauncher.setTaskExecutor(new SimpleAsyncTaskExecutor());
+        jobLauncher.afterPropertiesSet();
+        log.info("JobLauncher configured");
+        return jobLauncher;
+    }
 
     @Bean
     public FlatFileItemReader<Customer> reader() {
@@ -92,7 +108,8 @@ public class SpringBatchConfig {
     @Bean
     public TaskExecutor taskExecutor() {
         SimpleAsyncTaskExecutor asyncTaskExecutor = new SimpleAsyncTaskExecutor();
-        asyncTaskExecutor.setConcurrencyLimit(10);
+        asyncTaskExecutor.setConcurrencyLimit(100);
+        log.info("TaskExecutor configured");
         return asyncTaskExecutor;
     }
 

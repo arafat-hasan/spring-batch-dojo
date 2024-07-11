@@ -52,6 +52,4 @@ public class Customer {
     @Temporal(TemporalType.DATE)
     @Column(name="DOB")
     private Date dob;
-
-
 }
