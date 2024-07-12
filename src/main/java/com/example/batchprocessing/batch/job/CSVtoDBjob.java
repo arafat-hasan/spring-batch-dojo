@@ -1,48 +1,42 @@
-package com.example.batchprocessing.batch;
-
-import com.example.batchprocessing.entity.Customer;
-import com.example.batchprocessing.repository.CustomerRepository;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+package com.example.batchprocessing.batch.job;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
-import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
+import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.data.RepositoryItemWriter;
-import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.LineMapper;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.transaction.PlatformTransactionManager;
 
-@Slf4j
+import com.example.batchprocessing.batch.listener.LoggingChunkListener;
+import com.example.batchprocessing.batch.listener.LoggingJobExecutoinListener;
+import com.example.batchprocessing.batch.listener.LoggingStepExecutionListener;
+import com.example.batchprocessing.batch.processor.CustomerProcessor;
+import com.example.batchprocessing.model.Customer;
+import com.example.batchprocessing.repository.CustomerRepository;
+
 @Configuration
-@AllArgsConstructor
-public class SpringBatchConfig {
+public class CSVtoDBjob {
 
-    private JobRepository jobRepository;
-    private PlatformTransactionManager transactionManager;
-    private CustomerRepository customerRepository;
+    private final JobRepository jobRepository;
+    private final PlatformTransactionManager txManager;
+    private final CustomerRepository customerRepository;
 
-    @Bean(name = "CustomJobLauncher")
-    public JobLauncher jobLauncher() throws Exception {
-        TaskExecutorJobLauncher jobLauncher = new TaskExecutorJobLauncher();
-        jobLauncher.setJobRepository(jobRepository);
-        jobLauncher.setTaskExecutor(threadPoolTaskExecutor());
-        jobLauncher.afterPropertiesSet();
-        log.info("JobLauncher configured");
-        return jobLauncher;
+    public CSVtoDBjob(JobRepository jobRepository,
+            PlatformTransactionManager txManager,
+            CustomerRepository customerRepository) {
+        this.jobRepository = jobRepository;
+        this.txManager = txManager;
+        this.customerRepository = customerRepository;
     }
 
     @Bean
@@ -88,39 +82,21 @@ public class SpringBatchConfig {
     @Bean
     public Step step1() {
         return new StepBuilder("csv-step", jobRepository)
-                .<Customer, Customer>chunk(10, transactionManager)
+                .<Customer, Customer>chunk(10, txManager)
                 .listener(new LoggingStepExecutionListener())
-                // .listener(new LoggingChunkListener())
+                .listener(new LoggingChunkListener())
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())
-                .taskExecutor(threadPoolTaskExecutor())
+                .taskExecutor(new ThreadPoolTaskExecutor())
                 .build();
     }
 
-    @Bean
-    public Job runJob() {
+    @Bean(name = "insertIntoDbFromCsvJob")
+    public Job insertIntoDbFromCsvJob(Step step1) {
         return new JobBuilder("importCustomers", jobRepository)
-                .start(step1())
+                .start(step1)
                 .listener(new LoggingJobExecutoinListener())
                 .build();
-    }
-
-    @Bean
-    public TaskExecutor simpleAsyncTaskExecutor() {
-        SimpleAsyncTaskExecutor asyncTaskExecutor = new SimpleAsyncTaskExecutor();
-        asyncTaskExecutor.setConcurrencyLimit(100);
-        log.info("SimpleAsyncTaskExecutor configured");
-        return asyncTaskExecutor;
-    }
-
-    @Bean
-    public TaskExecutor threadPoolTaskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setMaxPoolSize(12);
-        executor.setCorePoolSize(8);
-        executor.setQueueCapacity(15);
-        log.info("ThreadPoolTaskExecutor configured");
-        return executor;
     }
 }
