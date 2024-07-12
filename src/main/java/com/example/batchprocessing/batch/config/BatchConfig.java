@@ -12,6 +12,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Slf4j
@@ -46,6 +47,7 @@ public class BatchConfig {
         executor.setCorePoolSize(8);
         executor.setQueueCapacity(15);
         executor.setThreadNamePrefix("sbd");
+        executor.initialize();
         log.info("ThreadPoolTaskExecutor configured");
         return executor;
     }

@@ -14,6 +14,7 @@ import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -30,13 +31,16 @@ public class CSVtoDBjob {
     private final JobRepository jobRepository;
     private final PlatformTransactionManager txManager;
     private final CustomerRepository customerRepository;
+    private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     public CSVtoDBjob(JobRepository jobRepository,
             PlatformTransactionManager txManager,
-            CustomerRepository customerRepository) {
+            CustomerRepository customerRepository,
+            ThreadPoolTaskExecutor threadPoolTaskExecutor) {
         this.jobRepository = jobRepository;
         this.txManager = txManager;
         this.customerRepository = customerRepository;
+        this.threadPoolTaskExecutor = threadPoolTaskExecutor;
     }
 
     @Bean
@@ -84,11 +88,11 @@ public class CSVtoDBjob {
         return new StepBuilder("csv-step", jobRepository)
                 .<Customer, Customer>chunk(10, txManager)
                 .listener(new LoggingStepExecutionListener())
-                .listener(new LoggingChunkListener())
+                // .listener(new LoggingChunkListener())
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())
-                .taskExecutor(new ThreadPoolTaskExecutor())
+                .taskExecutor(threadPoolTaskExecutor)
                 .build();
     }
 
