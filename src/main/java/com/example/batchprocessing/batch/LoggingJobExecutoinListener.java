@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class NotificationListener implements JobExecutionListener {
+public class LoggingJobExecutoinListener implements JobExecutionListener {
 
     @Override
     public void beforeJob(@SuppressWarnings("null") JobExecution jobExecution) {

@@ -89,6 +89,8 @@ public class SpringBatchConfig {
     public Step step1() {
         return new StepBuilder("csv-step", jobRepository)
                 .<Customer, Customer>chunk(10, transactionManager)
+                .listener(new LoggingStepExecutionListener())
+                // .listener(new LoggingChunkListener())
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())
@@ -100,6 +102,7 @@ public class SpringBatchConfig {
     public Job runJob() {
         return new JobBuilder("importCustomers", jobRepository)
                 .start(step1())
+                .listener(new LoggingJobExecutoinListener())
                 .build();
     }
 
