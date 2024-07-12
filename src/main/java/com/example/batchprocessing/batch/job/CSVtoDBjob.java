@@ -14,11 +14,9 @@ import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import com.example.batchprocessing.batch.listener.LoggingChunkListener;
 import com.example.batchprocessing.batch.listener.LoggingJobExecutoinListener;
 import com.example.batchprocessing.batch.listener.LoggingStepExecutionListener;
 import com.example.batchprocessing.batch.processor.CustomerProcessor;
