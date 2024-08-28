@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
@@ -19,8 +20,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
@@ -46,9 +49,10 @@ public class SpringBatchConfig {
     }
 
     @Bean
-    public FlatFileItemReader<Customer> reader() {
+    @StepScope
+    public FlatFileItemReader<Customer> reader(@Value("#{jobParameters['fileName']}") String fileName) {
         FlatFileItemReader<Customer> itemReader = new FlatFileItemReader<>();
-        itemReader.setResource(new FileSystemResource("src/main/resources/customers-10k.csv"));
+        itemReader.setResource(new ClassPathResource(fileName));
         itemReader.setName("csvReader");
         itemReader.setLinesToSkip(1);
         itemReader.setLineMapper(lineMapper());
@@ -91,7 +95,7 @@ public class SpringBatchConfig {
                 .<Customer, Customer>chunk(10, transactionManager)
                 .listener(new LoggingStepExecutionListener())
                 // .listener(new LoggingChunkListener())
-                .reader(reader())
+                .reader(reader(null))
                 .processor(processor())
                 .writer(writer())
                 .taskExecutor(threadPoolTaskExecutor())
