@@ -1,7 +1,8 @@
-package com.example.batchprocessing.batch;
+package com.example.batchprocessing.batch.processor;
 
-import com.example.batchprocessing.entity.Customer;
 import org.springframework.batch.item.ItemProcessor;
+
+import com.example.batchprocessing.model.Customer;
 
 public class CustomerProcessor implements ItemProcessor<Customer,Customer> {
 

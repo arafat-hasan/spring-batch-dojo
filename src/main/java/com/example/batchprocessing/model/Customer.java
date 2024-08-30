@@ -1,4 +1,4 @@
-package com.example.batchprocessing.entity;
+package com.example.batchprocessing.model;
 
 import java.util.Date;
 

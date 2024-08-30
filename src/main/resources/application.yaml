@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: ${DB_DSN:jdbc:postgresql://localhost:5432/ah-jsb-auth}
+    url: ${DB_DSN:jdbc:postgresql://localhost:5432/spring_batch_dojo}
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:B4z1n9a!}
     hikari:

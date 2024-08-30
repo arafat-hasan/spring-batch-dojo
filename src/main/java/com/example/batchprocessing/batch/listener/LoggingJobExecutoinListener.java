@@ -1,14 +1,13 @@
-package com.example.batchprocessing.batch;
+package com.example.batchprocessing.batch.listener;
 
 import org.springframework.batch.core.JobExecution;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.JobExecutionListener;
-import org.springframework.stereotype.Component;
 
 
-@Component
+
 @Slf4j
 @RequiredArgsConstructor
 public class LoggingJobExecutoinListener implements JobExecutionListener {

@@ -30,7 +30,9 @@ public class JobController {
     @Autowired
     @Qualifier("CustomJobLauncher")
     private JobLauncher jobLauncher;
+
     @Autowired
+    @Qualifier("insertIntoDbFromCsvJob")
     private Job job;
 
     @PostMapping("/importCustomers")
