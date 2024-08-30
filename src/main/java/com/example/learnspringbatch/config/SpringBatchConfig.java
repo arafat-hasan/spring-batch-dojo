@@ -25,6 +25,7 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Objects;
 
@@ -44,6 +45,11 @@ public class SpringBatchConfig {
 //        itemReader.setLineMapper(lineMapper());
 //        return itemReader;
 //    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
 
     @Bean
     @StepScope
@@ -89,7 +95,7 @@ public class SpringBatchConfig {
     @Bean
     public Step step1() {
         return new StepBuilder("csv-step", jobRepository)
-                .<Customer, Customer>chunk(10, transactionManager)
+                .<Customer, Customer>chunk(100, transactionManager)
                 .reader(reader(null))
                 .processor(processor())
                 .writer(writer())
@@ -114,9 +120,9 @@ public class SpringBatchConfig {
     @Bean
     public TaskExecutor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(8);
-        executor.setMaxPoolSize(12);
-        executor.setQueueCapacity(15);
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(5);
+        executor.setQueueCapacity(0);
         return executor;
     }
 }
