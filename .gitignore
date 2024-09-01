@@ -32,4 +32,4 @@ build/
 ### VS Code ###
 .vscode/
 
-./src/main/resources/customers-1m.csv
+src/main/resources/customers-1m.csv
