@@ -76,7 +76,7 @@ public class JobController {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.TEXT_PLAIN);
 
-            HttpEntity<String> request = new HttpEntity<>("customers-1m.csv", headers);
+            HttpEntity<String> request = new HttpEntity<>("customers-10k.csv", headers);
 
             restTemplate.postForObject(targetURL, request, String.class);
         }
