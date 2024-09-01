@@ -1,4 +1,0 @@
-POST http://localhost:8000/jobs/stress-test
-Content-Type: text/plain
-
-1
