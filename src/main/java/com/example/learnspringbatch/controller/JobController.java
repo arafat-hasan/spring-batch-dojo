@@ -1,33 +1,37 @@
 package com.example.learnspringbatch.controller;
 
+import com.example.learnspringbatch.config.ChunkEventListener;
+import com.example.learnspringbatch.config.CustomerItemProcessor;
+import com.example.learnspringbatch.config.CustomerJobExecutionListener;
+import com.example.learnspringbatch.service.ChunkService;
 import lombok.AllArgsConstructor;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 
 @RestController
 @RequestMapping("/jobs")
 @AllArgsConstructor
 public class JobController {
+    private final ChunkEventListener chunkEventListener;
+    private final ChunkService chunkService;
     private RestTemplate restTemplate;
     private JobLauncher jobLauncher;
     private Job job;
+    private CustomerJobExecutionListener customerJobExecutionListener;
 
     @PostMapping("/import")
     public void importCsvToDbJob() {
@@ -72,9 +76,20 @@ public class JobController {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.TEXT_PLAIN);
 
-            HttpEntity<String> request = new HttpEntity<>("customers-10k.csv", headers);
+            HttpEntity<String> request = new HttpEntity<>("customers-1m.csv", headers);
 
             restTemplate.postForObject(targetURL, request, String.class);
         }
+    }
+
+    @GetMapping("/status/{job_execution_id}")
+    public Double getJobStatus(@PathVariable Long job_execution_id) {
+        Integer chunkSize = chunkService.getChunkSize();
+        Long datasetSize = customerJobExecutionListener.getDatasetLen(job_execution_id);
+
+        Double reqChunk = Double.valueOf(datasetSize) / chunkSize;
+        Long processedChunk = chunkEventListener.getProcessedCount();
+
+        return (Double.valueOf(processedChunk) / reqChunk) * 100;
     }
 }

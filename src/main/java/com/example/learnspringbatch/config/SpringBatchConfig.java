@@ -2,9 +2,12 @@ package com.example.learnspringbatch.config;
 
 import com.example.learnspringbatch.entity.Customer;
 import com.example.learnspringbatch.repository.CustomerRepository;
+import com.example.learnspringbatch.service.ChunkService;
 import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -24,6 +27,7 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.client.RestTemplate;
 
@@ -35,16 +39,7 @@ public class SpringBatchConfig {
     private JobRepository jobRepository;
     private PlatformTransactionManager transactionManager;
     private CustomerRepository customerRepository;
-
-//    @Bean
-//    public FlatFileItemReader<Customer> reader() {
-//        FlatFileItemReader<Customer> itemReader = new FlatFileItemReader<>();
-//        itemReader.setResource(new ClassPathResource("customers.csv"));
-//        itemReader.setName("customers");
-//        itemReader.setLinesToSkip(1);
-//        itemReader.setLineMapper(lineMapper());
-//        return itemReader;
-//    }
+    private ChunkService chunkService;
 
     @Bean
     public RestTemplate restTemplate() {
@@ -95,10 +90,13 @@ public class SpringBatchConfig {
     @Bean
     public Step step1() {
         return new StepBuilder("csv-step", jobRepository)
-                .<Customer, Customer>chunk(100, transactionManager)
+                .<Customer, Customer>chunk(chunkService.getChunkSize(), transactionManager)
                 .reader(reader(null))
                 .processor(processor())
                 .writer(writer())
+                .listener(new ChunkEventListener())
+                .listener(new CustomerSkipListener())
+                .listener(new CustomerItemWriterListener())
                 .taskExecutor(threadPoolTaskExecutor())
                 .build();
     }
@@ -107,6 +105,7 @@ public class SpringBatchConfig {
     public Job runJob() {
         return new JobBuilder("customer", jobRepository)
                 .start(step1())
+                .listener(new CustomerJobExecutionListener())
                 .build();
     }
 
@@ -120,9 +119,9 @@ public class SpringBatchConfig {
     @Bean
     public TaskExecutor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(5);
-        executor.setQueueCapacity(0);
+        executor.setCorePoolSize(10);
+        executor.setMaxPoolSize(15);
+        executor.setQueueCapacity(10);
         return executor;
     }
 }
