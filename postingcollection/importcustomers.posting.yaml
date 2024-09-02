@@ -1,0 +1,5 @@
+name: importCustomers
+method: POST
+url: http://localhost:8000/jobs/importCustomers
+body:
+  content: "{\n\t\"path\": \"src/main/resources/customers-10k.csv\"\n}"

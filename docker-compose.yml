@@ -1,0 +1,46 @@
+services:
+  db:
+    container_name: ah-jsb-auth-db
+    image: postgres
+    restart: no
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGPORT: ${PGPORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+    # volumes:
+    #   - pgdata:/var/lib/postgresql/data
+    ports:
+      - ${PGPORT}:${PGPORT}
+    networks:
+      - net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 53s
+      timeout: 5s
+      retries: 10
+
+  app:
+    container_name: spring-batch-dojo
+    stdin_open: true
+    build:
+      dockerfile: Dockerfile.dev
+      args:
+        - USER=$USER
+    env_file:
+      - .env
+    volumes:
+      - $HOME/Share:/home/$USER/Share
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - db
+    restart: no
+    networks:
+      - net
+
+networks:
+  net:
+
+# volumes:
+#   pgdata:
