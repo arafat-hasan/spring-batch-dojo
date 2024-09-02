@@ -9,6 +9,8 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.data.RepositoryItemWriter;
@@ -97,6 +99,15 @@ public class SpringBatchConfig {
                 .build();
     }
 
+    @Bean(name = "CustomJobLauncher")
+    public JobLauncher jobLauncher() throws Exception {
+        TaskExecutorJobLauncher jobLauncher = new TaskExecutorJobLauncher();
+        jobLauncher.setJobRepository(jobRepository);
+        jobLauncher.setTaskExecutor(threadPoolTaskExecutor());
+        jobLauncher.afterPropertiesSet();
+        return jobLauncher;
+    }
+
     @Bean
     public Job runJob() {
         return new JobBuilder("customer", jobRepository)
@@ -115,9 +126,9 @@ public class SpringBatchConfig {
     @Bean
     public TaskExecutor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(10);
-        executor.setMaxPoolSize(15);
-        executor.setQueueCapacity(10);
+        executor.setCorePoolSize(100);
+        executor.setMaxPoolSize(150);
+        executor.setQueueCapacity(100);
         return executor;
     }
 }

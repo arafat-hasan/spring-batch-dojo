@@ -9,6 +9,8 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
@@ -24,11 +26,14 @@ import java.io.FileNotFoundException;
 @RequestMapping("/jobs")
 @AllArgsConstructor
 public class JobController {
+    @Autowired
+    @Qualifier("CustomJobLauncher")
+    private JobLauncher jobLauncher;
+    private Job job;
+
     private final ChunkEventListener chunkEventListener;
     private final ChunkService chunkService;
     private RestTemplate restTemplate;
-    private JobLauncher jobLauncher;
-    private Job job;
     private CustomerJobExecutionListener customerJobExecutionListener;
 
     @PostMapping("/import")
@@ -75,7 +80,7 @@ public class JobController {
             headers.setContentType(MediaType.TEXT_PLAIN);
 
             HttpEntity<String> request = new HttpEntity<>("customers-10k.csv", headers);
-
+//            HttpEntity<String> request = new HttpEntity<>("customers-1m.csv", headers);
             restTemplate.postForObject(targetURL, request, String.class);
         }
     }
@@ -87,8 +92,6 @@ public class JobController {
 
         Double reqChunk = Double.valueOf(datasetSize) / chunkSize;
         Long processedChunk = chunkEventListener.getProcessedChunkCount(job_execution_id);
-
-        System.err.println(datasetSize + " " + reqChunk + " " + processedChunk);
 
         return (Double.valueOf(processedChunk) / reqChunk) * 100;
     }
