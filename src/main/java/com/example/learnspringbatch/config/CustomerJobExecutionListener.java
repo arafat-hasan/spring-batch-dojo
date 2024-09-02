@@ -10,8 +10,16 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 @Getter
 @Component
@@ -23,13 +31,16 @@ public class CustomerJobExecutionListener implements JobExecutionListener {
     @Override
     public void beforeJob(JobExecution jobExecution) {
         String fileName = jobExecution.getJobParameters().getString("fileName");
-        assert fileName != null;
         Resource resource = new ClassPathResource(fileName);
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
-            Long lineCount = 0L;
-            while (reader.readLine() != null) {
-                lineCount++;
-            }
+
+        if (!resource.exists()) {
+            throw new FileNotFoundException(fileName);
+        }
+
+        long lineCount = 0L;
+        Path filePath = Paths.get(resource.getURI());
+        try (Stream<String> stream = Files.lines(filePath, StandardCharsets.UTF_8)) {
+            lineCount = stream.count();
             datasetLen.put(jobExecution.getJobId(), lineCount);
         }
     }
@@ -41,5 +52,4 @@ public class CustomerJobExecutionListener implements JobExecutionListener {
             throw new RuntimeException("Invalid job id: " + jobId);
         }
     }
-
 }

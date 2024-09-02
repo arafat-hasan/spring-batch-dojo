@@ -9,5 +9,4 @@ public class LearnSpringBatchApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(LearnSpringBatchApplication.class, args);
 	}
-
 }

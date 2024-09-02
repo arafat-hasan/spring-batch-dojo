@@ -1,7 +1,6 @@
 package com.example.learnspringbatch.controller;
 
 import com.example.learnspringbatch.config.ChunkEventListener;
-import com.example.learnspringbatch.config.CustomerItemProcessor;
 import com.example.learnspringbatch.config.CustomerJobExecutionListener;
 import com.example.learnspringbatch.service.ChunkService;
 import lombok.AllArgsConstructor;
@@ -10,7 +9,6 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
@@ -88,7 +86,9 @@ public class JobController {
         Long datasetSize = customerJobExecutionListener.getDatasetLen(job_execution_id);
 
         Double reqChunk = Double.valueOf(datasetSize) / chunkSize;
-        Long processedChunk = chunkEventListener.getProcessedCount();
+        Long processedChunk = chunkEventListener.getProcessedChunkCount(job_execution_id);
+
+        System.err.println(datasetSize + " " + reqChunk + " " + processedChunk);
 
         return (Double.valueOf(processedChunk) / reqChunk) * 100;
     }
